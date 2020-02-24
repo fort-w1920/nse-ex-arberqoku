@@ -1,0 +1,20 @@
+1. Schreiben Sie eine Funktion `get2()` die das selbe tut wie `get` und dafür `as.name()` und `eval()` benutzt. Nehmen Sie  hier an dass der Benutzer das `envir`-Argument explizit setzt statt dem komplexeren Verfahren in `get()`.
+2. Schreiben Sie eine Funktion `assign2(x, value, envir)` die das selbe tut wie `assign()` und dafür `as.name()`, `substitute()`, and `eval()` benutzt. Nehmen Sie  hier an dass der Benutzer das `envir`-Argument explizit setzt statt dem komplexeren Mechanismus in `assign`.
+3.  Benutzen Sie `formals()` bzw. `formals<-()` um untenstehende Funktion `g()` so zu modifizieren dass `x` **keinen** Default hat und `y` den Default 10:  
+```{r}
+g <- function(x = 20, y) {
+  x + y
+}
+```
+4. Schreiben Sie eine Funktion `find_terms_in_interactions()` die aus einer beliebigen Formel alle Modellterme extrahiert die in Interaktionstermen vorkommen, zum Beispiel:
+
+```{r, find_interactions_def, echo=FALSE, code = readLines("find-interactions-def.R")}
+```
+
+
+```{r}
+find_terms_in_interactions(
+  a ~ 1 + a + b * c + poly(d, 3) + (g + h)^2 + e:f:b:fnargl
+)
+```
+*Hinweis:* Hadley's _Walking the AST with recursive functions_ wird hier u.U. hilfreich sein.
