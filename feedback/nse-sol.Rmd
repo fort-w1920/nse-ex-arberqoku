@@ -1,0 +1,120 @@
+```{r, child = "nse-ex.Rmd"}
+```
+
+----------------------------------------------------
+
+### Lösung:
+
+1./2.
+```{r, get_assign, echo=TRUE, error=TRUE}
+# arguments & return: see ?assign
+assign2 <- function(x, value, envir = parent.frame(), inherits = FALSE) {
+  checkmate::assert_character(x, len = 1L)
+  checkmate::assert_environment(envir)
+  checkmate::assert_logical(inherits, len = 1L)
+
+  x_name <- as.name(x)
+  expr <- substitute(x_name <- value)
+  if (inherits) {
+    original_envir <- envir
+    # find first parent env that contains "x" and use that for assignment ...
+    while (!exists(x, envir, inherits = FALSE) &
+      !identical(envir, emptyenv())) {
+      envir <- parent.env(envir)
+    }
+    # ... or the original environment if x wasn't found:
+    if (identical(envir, emptyenv())) envir <- original_envir
+    # NB: this yields different behavior than base::assign,
+    #     which always assigns into globalenv() in this case!
+  }
+  eval(expr, envir)
+}
+
+e <- new.env()
+f <- new.env()
+parent.env(f) <- e
+assign2("2pi", 3, e)
+ls.str(e)
+assign2("2pi", 4, f)
+ls.str(f)
+rm("2pi", envir = f)
+exists("2pi", f, inherits = FALSE)
+assign2("2pi", "assigned in parent env!", f, inherits = TRUE)
+ls.str(e)
+
+#-------------------------------------------------------------------------------
+
+# arguments & return: see ?get
+get2 <- function(x, envir = parent.frame(), mode = "any", inherits = TRUE) {
+  checkmate::assert_character(x, len = 1L)
+  checkmate::assert_environment(envir)
+  checkmate::assert_character(mode)
+  checkmate::assert_logical(inherits, len = 1L)
+
+  x_name <- as.name(x)
+  if (!inherits) {
+    # set parent environment to empty env (and make envir a list) so that
+    # ONLY envir is searched if (!inherits)
+    ret <- try(eval(x_name, envir = as.list(envir), enclos = emptyenv()),
+      silent = TRUE
+    )
+  } else {
+    ret <- try(eval(x_name, envir = envir), silent = TRUE)
+  }
+  if (inherits(ret, "try-error")) stop("object ", x_name, " not found.")
+  if (mode != "any" & !(mode %in% c(typeof(ret), mode(ret)))) {
+    stop("object ", x_name, " of mode ", mode, " not found.")
+  } else {
+    ret
+  }
+}
+
+
+get2("2pi", e)
+get2("2pi", f, inherits = TRUE)
+
+# these should be errors:
+get2("2pi", f, inherits = FALSE)
+get2("2pi", e, mode = "function")
+```
+
+3.
+
+```{r, modify_formals, echo=TRUE}
+g <- function(x = 20, y) {
+  x + y
+}
+
+formals(g)$x <- formals(g)$y
+formals(g)$y <- 10
+
+g
+```
+
+4.
+
+```{r, find_interactions_def, echo=TRUE}
+```
+
+```{r, find_interactions2_def, echo=TRUE}
+## Einfachere, bessere Lösung mit terms.formula:
+## (Original von Thomas Maierhofer)
+find_terms_in_interactions_2 <- function(formula) {
+  # terms with interactions occur in the factors table at least twice with entry
+  # 1 if they have main and interaction effects or at least once with entry 2
+  # if they occur only in an interaction effect:
+  fac <- attr(terms.formula(formula), "factors")
+  names <- colnames(fac)[colSums(fac) > 1]
+  unique(unlist(strsplit(x = names, split = ":")))
+}
+```
+
+```{r, find_interactions_test, echo=TRUE}
+find_terms_in_interactions(a ~ 1 + b * c + poly(d, 3) + (g + h)^2 + e:f:b:fnargl)
+find_terms_in_interactions_2(a ~ 1 + b * c + poly(d, 3) + (g + h)^2 + e:f:b:fnargl)
+
+# aber:
+find_terms_in_interactions(a ~ 1 + (b + c):d + e - c:d)
+find_terms_in_interactions_2(a ~ 1 + (b + c):d + e - c:d)
+# --> einfacher ist besser...
+```

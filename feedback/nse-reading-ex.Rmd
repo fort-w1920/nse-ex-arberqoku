@@ -1,0 +1,7 @@
+### Lektüre *Metaprogramming, Expressions, Evaluation*
+
+Lesen Sie Kapitel 17, 18 und 20.6 aus H. Wickham's [*Advanced R Programming*](https://adv-r.hadley.nz).
+
+### Lektüre *Standard non-standard evaluation rules*
+
+Lesen Sie Thomas Lumley's [*Standard non-standard evaluation rules*](http://developer.r-project.org/nonstandard-eval.pdf) die *best practice* für die Benutzung von NSE in R definieren.
